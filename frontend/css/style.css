@@ -1,0 +1,752 @@
+* {
+    box-sizing: border-box;
+}
+.hero {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-align: left;
+    padding: 150px 0 0 0;
+    margin: 0;
+}
+
+.hero > div {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+.hero h1,
+.hero p {
+    margin-left: 0;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    min-height: 100%;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #ffffff;
+    color: #000000;
+}
+
+
+.hero h1 {
+    margin: 0;
+    font-size: 160px !important;
+    line-height: 0.95;
+    font-weight: 900;
+    letter-spacing: -6px;
+    color: #000000;
+    margin-left: 10px !important;
+}
+
+.hero p {
+    margin: 24px 0 0;
+    font-size: clamp(18px, 2vw, 28px);
+    line-height: 1.4;
+    color: #000000;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 80px 40px;
+    background: #ffffff;
+}
+
+section {
+    margin-bottom: 80px;
+}
+
+h2 {
+    margin-top: 0;
+    margin-bottom: 30px;
+    font-size: 36px;
+    font-weight: 800;
+    color: #000000;
+}
+
+h3 {
+    color: #000000;
+}
+
+p {
+    color: #000000;
+}
+
+label {
+    color: #000000;
+}
+
+input,
+select,
+textarea {
+    background: #ffffff;
+    color: #000000;
+    border: 1px solid #000000;
+}
+
+button {
+    background: #000000;
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #222222;
+}
+
+a {
+    color: #000000;
+}
+.hero,
+.hero > div,
+.hero h1,
+.hero p {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+.hero {
+    padding-left: 0 !important;
+}
+.hero {
+    width: calc(100% + 80px) !important;
+    margin-left: -70px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-align: left;
+}
+.hero h1 {
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+/* =================================
+   Transformation Budget
+   ================================= */
+
+/* Remove the card appearance */
+.grid .card:first-child {
+    width: 100%;
+    max-width: none;
+
+    margin: 0 0 80px 0;
+    padding: 0;
+
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* Heading stays aligned with the page */
+.grid .card:first-child h2 {
+    margin: 0 0 35px 0;
+    padding: 0;
+
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    text-align: left;
+
+    color: #111111;
+}
+
+/* Only the form is centered */
+.grid .card:first-child form {
+    width: 700px;
+    max-width: 100%;
+    margin: 0 auto;
+
+    display: flex;
+    align-items: flex-end;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+/* Label */
+.grid .card:first-child label {
+    width: 100%;
+    margin: 0 0 -5px 0;
+
+    font-size: 14px;
+    font-weight: 600;
+    color: #555555;
+}
+
+/* Input */
+.grid .card:first-child input {
+    flex: 1;
+    min-width: 250px;
+    height: 52px;
+
+    padding: 0 16px;
+
+    background: #ffffff;
+    color: #111111;
+
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+
+    font-size: 17px;
+    outline: none;
+}
+
+/* Input focus */
+.grid .card:first-child input:focus {
+    border-color: #111111;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.07);
+}
+
+/* Save button */
+.grid .card:first-child button {
+    height: 52px;
+    padding: 0 28px;
+
+    background: #111111;
+    color: #ffffff;
+
+    border: none;
+    border-radius: 10px;
+
+    font-size: 15px;
+    font-weight: 700;
+
+    cursor: pointer;
+}
+
+.grid .card:first-child button:hover {
+    background: #333333;
+}
+/* =========================================
+   ADD APPLICATION - MODERN TABLE FORM
+   ========================================= */
+
+.application-section {
+    width: 100%;
+    margin: 0 0 80px 0;
+    padding: 0;
+}
+
+.application-header {
+    margin-bottom: 28px;
+}
+
+.application-header .section-label {
+    display: inline-block;
+    margin-bottom: 10px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.8px;
+    color: #777777;
+}
+
+.application-header h2 {
+    margin: 0 0 8px 0;
+    font-size: 42px;
+    line-height: 1.05;
+    font-weight: 800;
+    letter-spacing: -1.5px;
+    color: #111111;
+}
+
+.application-header p {
+    margin: 0;
+    font-size: 15px;
+    line-height: 1.6;
+    color: #777777;
+}
+
+.application-form {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 0.8fr 1.3fr 1fr 1fr;
+    border: 1px solid #e4e4e4;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #ffffff;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
+}
+
+.application-form .form-field {
+    min-height: 108px;
+    padding: 20px 22px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-right: 1px solid #eeeeee;
+    border-bottom: 1px solid #eeeeee;
+    transition: background 0.2s ease;
+}
+
+.application-form .form-field:hover {
+    background: #fafafa;
+}
+
+.application-form label {
+    margin-bottom: 9px;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: #777777;
+}
+
+.application-form input,
+.application-form select {
+    width: 100%;
+    height: 44px;
+    padding: 0 13px;
+    border: 1px solid #dedede;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #111111;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 500;
+    outline: none;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.application-form input:focus,
+.application-form select:focus {
+    border-color: #111111;
+    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.06);
+}
+
+.application-form input::placeholder {
+    color: #aaaaaa;
+}
+
+.application-form select {
+    cursor: pointer;
+}
+
+.input-prefix,
+.input-suffix {
+    position: relative;
+    width: 100%;
+}
+
+.input-prefix input {
+    padding-left: 34px;
+}
+
+.input-prefix span {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 14px;
+    font-weight: 700;
+    color: #777777;
+    z-index: 1;
+}
+
+.input-suffix input {
+    padding-right: 38px;
+}
+
+.input-suffix span {
+    position: absolute;
+    right: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 13px;
+    font-weight: 700;
+    color: #777777;
+}
+
+.dependencies-field {
+    grid-column: span 3;
+    border-bottom: none !important;
+}
+
+.dependencies-field small {
+    margin-top: 7px;
+    font-size: 11px;
+    color: #999999;
+}
+
+.form-action {
+    grid-column: 4;
+    min-height: 108px;
+    padding: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid #eeeeee;
+    background: #fafafa;
+}
+
+.application-form button {
+    width: 100%;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    border: none;
+    border-radius: 9px;
+    background: #111111;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s ease, box-shadow 0.2s ease;
+}
+
+.application-form button span {
+    font-size: 20px;
+    line-height: 1;
+    font-weight: 400;
+}
+
+.application-form button:hover {
+    background: #292929;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.application-form button:active {
+    transform: translateY(0);
+}
+
+@media (max-width: 1000px) {
+    .application-form {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .dependencies-field {
+        grid-column: span 2;
+    }
+
+    .form-action {
+        grid-column: span 2;
+    }
+}
+
+@media (max-width: 650px) {
+    .application-header h2 {
+        font-size: 32px;
+    }
+
+    .application-form {
+        grid-template-columns: 1fr;
+        border-radius: 12px;
+    }
+
+    .application-form .form-field {
+        border-right: none;
+    }
+
+    .dependencies-field {
+        grid-column: span 1;
+    }
+
+    .form-action {
+        grid-column: span 1;
+    }
+}
+
+/* =========================================
+   DATABASE APPLICATION TABLE
+   ========================================= */
+
+#database-table {
+    width: 100%;
+    margin: 50px 0 80px 0;
+    overflow-x: auto;
+}
+
+#database-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
+}
+
+#database-table th {
+    padding: 16px 18px;
+    background: #111111;
+    color: #ffffff;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+#database-table td {
+    padding: 15px 18px;
+    border-bottom: 1px solid #eeeeee;
+    color: #222222;
+    font-size: 14px;
+    vertical-align: middle;
+    overflow-wrap: anywhere;
+}
+
+#database-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+#database-table tr:hover td {
+    background: #f8f8f8;
+}
+
+#database-table td:first-child {
+    font-weight: 700;
+    color: #555555;
+}
+
+#database-table td:nth-child(3),
+#database-table td:nth-child(4) {
+    font-weight: 600;
+}
+
+#database-table td:nth-child(5) {
+    font-weight: 700;
+}
+
+#database-table .empty-state td {
+    padding: 32px 18px;
+    color: #555555;
+    text-align: center;
+}
+
+@media (max-width: 800px) {
+    #database-table {
+        overflow-x: auto;
+    }
+
+    #database-table table {
+        min-width: 900px;
+    }
+}
+/* =========================================
+   TECHOPTIMA HERO - MOBILE RESPONSIVE
+   ========================================= */
+
+@media (max-width: 650px) {
+    .hero h1 {
+        font-size: clamp(60px, 18vw, 110px) !important;
+        letter-spacing: -3px;
+        line-height: 0.95;
+        white-space: nowrap;
+    }
+
+    .hero {
+        padding-top: 100px;
+        width: 100% !important;
+        margin-left: 0 !important;
+        overflow: hidden;
+    }
+}
+
+/* =========================================
+   TRANSFORMATION BUDGET - SMALLER SCREENS
+   ========================================= */
+
+@media (max-width: 655px) {
+    .grid .card:first-child h2 {
+        margin: -587px 0 35px 0;
+    }
+
+    .container {
+        padding: 48px 20px;
+    }
+
+    .grid .card:first-child input {
+        min-width: 0;
+        width: 100%;
+    }
+}
+
+/* =========================================
+   NOTIFICATION POPUPS
+   Uses the existing black-and-white visual language.
+   ========================================= */
+
+.notification-region {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    width: min(420px, calc(100vw - 40px));
+}
+
+.notification {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px 18px;
+    color: #ffffff;
+    background: #111111;
+    border: 1px solid #111111;
+    border-radius: 10px;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.22);
+    font-size: 14px;
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+}
+
+.notification strong {
+    color: #ffffff;
+    white-space: nowrap;
+}
+
+.notification--warning,
+.notification--error {
+    color: #111111;
+    background: #ffffff;
+    border: 2px solid #111111;
+}
+
+.notification--warning strong,
+.notification--error strong {
+    color: #111111;
+}
+
+.notification__close {
+    width: 24px;
+    height: 24px;
+    margin: -4px -6px -4px auto;
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    font-size: 18px;
+    line-height: 1;
+}
+
+.notification__close:hover {
+    color: #111111;
+    background: #ffffff;
+}
+
+button:disabled,
+.button[aria-disabled="true"] {
+    cursor: wait;
+    opacity: 0.7;
+}
+
+a.button {
+    display: inline-block;
+    padding: 12px 18px;
+    color: #ffffff;
+    background: #111111;
+    border-radius: 8px;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+a.button:hover {
+    color: #ffffff;
+    background: #333333;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 2px solid #111111;
+    outline-offset: 3px;
+}
+
+/* Shared styling for pages rendered by the backend. */
+.generated-page__content {
+    min-width: 0;
+}
+
+.generated-page h1 {
+    margin: 0 0 28px;
+    font-size: clamp(32px, 6vw, 52px);
+    line-height: 1.08;
+    overflow-wrap: anywhere;
+}
+
+.generated-page section,
+.generated-page .result-card {
+    min-width: 0;
+    margin: 20px 0;
+    padding: 20px;
+    border: 1px solid #dddddd;
+    border-radius: 10px;
+}
+
+.generated-page table {
+    width: 100%;
+    margin: 22px 0 10px;
+    border: 1px solid #111111;
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 10px;
+    font-size: 15px;
+    overflow: hidden;
+}
+
+.generated-page th,
+.generated-page td {
+    padding: 15px 18px;
+    overflow-wrap: anywhere;
+}
+
+.generated-page th {
+    color: #ffffff;
+    background: #000000;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.generated-page td {
+    border-top: 1px solid #e5e5e5;
+}
+
+.generated-page section:has(table) {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.generated-page .result-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+@media (max-width: 800px) {
+    .generated-page .result-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .generated-page table {
+        min-width: 620px;
+        font-size: 13px;
+    }
+}
+
+@media (max-width: 650px) {
+    .notification-region {
+        top: 12px;
+        right: 12px;
+        width: calc(100vw - 24px);
+    }
+}

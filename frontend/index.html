@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TechOptima Dashboard</title>
+
+    <link rel="stylesheet" href="css/style.css?v=5">
+    <script src="/js/app.js" defer></script>
+</head>
+
+<body>
+
+    <main class="container">
+
+        <header class="hero">
+            <h1>TechOptima</h1>
+        </header>
+
+        <div class="grid">
+
+            <section class="card">
+                <h2>Set Transformation Budget</h2>
+
+                <form class="budget-form" method="post" action="/budget">
+
+                    <label for="amount">
+                        Budget Amount
+                    </label>
+
+                    <input
+                        id="amount"
+                        name="amount"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        placeholder="45.00"
+                        required
+                    >
+
+                    <button type="submit" data-loading-label="Saving budget…">
+                        Save Budget
+                    </button>
+
+                </form>
+            </section>
+
+
+            <section class="application-section">
+    <div class="application-header">
+        <div>
+            <span class="section-label">APPLICATION MANAGEMENT</span>
+            <h2>Add Application</h2>
+            <p>Register an application and define its modernization parameters.</p>
+        </div>
+    </div>
+
+    <form class="application-form" method="post" action="/application">
+
+        <div class="form-field">
+            <label for="id">Application ID</label>
+            <input
+                id="id"
+                name="id"
+                type="number"
+                placeholder="1001"
+                required
+            >
+        </div>
+
+        <div class="form-field">
+            <label for="name">Application Name</label>
+            <input
+                id="name"
+                name="name"
+                type="text"
+                placeholder="CRM"
+                required
+            >
+        </div>
+
+        <div class="form-field">
+            <label for="cost">Modernization Cost</label>
+            <div class="input-prefix">
+                <span>$</span>
+                <input
+                    id="cost"
+                    name="cost"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    placeholder="20.00"
+                    required
+                >
+            </div>
+        </div>
+
+        <div class="form-field">
+            <label for="benefit">Business Benefit</label>
+            <div class="input-suffix">
+                <input
+                    id="benefit"
+                    name="benefit"
+                    type="number"
+                    min="0"
+                    max="100"
+                    placeholder="85"
+                    required
+                >
+                <span>%</span>
+            </div>
+        </div>
+
+        <div class="form-field">
+            <label for="criticality">Criticality</label>
+            <select id="criticality" name="criticality" required>
+                <option value="">Select criticality</option>
+                <option value="LOW">LOW</option>
+                <option value="MEDIUM">MEDIUM</option>
+                <option value="HIGH">HIGH</option>
+                <option value="CRITICAL">CRITICAL</option>
+            </select>
+        </div>
+
+        <div class="form-field">
+            <label for="department">Department</label>
+            <select id="department" name="department" required>
+                <option value="">Select department</option>
+                <option value="FINANCE">FINANCE</option>
+                <option value="HUMAN_RESOURCES">HUMAN RESOURCES</option>
+                <option value="SALES">SALES</option>
+                <option value="MARKETING">MARKETING</option>
+                <option value="OPERATIONS">OPERATIONS</option>
+                <option value="INFORMATION_TECHNOLOGY">INFORMATION TECHNOLOGY</option>
+                <option value="CUSTOMER_SERVICE">CUSTOMER SERVICE</option>
+            </select>
+        </div>
+
+        <div class="form-field dependencies-field">
+            <label for="dependencies">Dependency IDs</label>
+                <input
+                    id="dependencies"
+                    name="dependencies"
+                    type="text"
+                    placeholder="1001, 1002"
+                    aria-describedby="dependencies-help"
+                >
+            <small id="dependencies-help">Enter application IDs separated by commas</small>
+        </div>
+
+        <div class="form-action">
+            <button type="submit" data-loading-label="Adding application…">
+                <span>+</span>
+                Add Application
+            </button>
+        </div>
+
+    </form>
+</section>
+
+        </div>
+
+        <section class="card">
+            <div id="database-table"></div>
+            
+            <h2>Optimization</h2>
+
+            <p>
+                Knapsack Optimization → Dependency Validation → Priority Scheduling → Optimization Result
+            </p>
+
+            <a class="button action-link" href="/optimize" data-loading-label="Preparing optimization…">
+                Run Optimization
+            </a>
+        </section>
+
+    </main>
+
+</body>
+</html>
+
+
+

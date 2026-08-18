@@ -1,0 +1,28 @@
+﻿# Environment & Secrets
+.env
+*.env
+*.env.local
+
+# Compiled Java Classes & Maven Target
+target/
+*.class
+*.jar
+*.war
+
+# IDE / Editor Files
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# Operating System Files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+*.bak
+
+# Log Files
+*.log

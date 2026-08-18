@@ -1,0 +1,689 @@
+﻿============================================================
+FILE: pom.xml
+============================================================
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    
+    <groupId>com.techoptima</groupId>
+    <artifactId>TechOptima</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    
+    <properties>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+    <dependencies>
+    <dependency>
+        <groupId>org.junit.jupiter</groupId>
+        <artifactId>junit-jupiter</artifactId>
+        <version>5.10.2</version>
+        <scope>test</scope>
+    </dependency>
+    <dependency>
+    <groupId>com.mysql</groupId>
+    <artifactId>mysql-connector-j</artifactId>
+    <version>9.4.0</version>
+</dependency>
+</dependencies>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+                <configuration>
+                    <source>11</source>
+                    <target>11</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+============================================================
+FILE: README.md
+============================================================
+# TechOptima
+
+TechOptima is an Enterprise Technology Transformation & Portfolio Optimization System designed to help companies decide which software applications should be modernized within a limited budget and in what order.
+
+## Technology Stack
+
+- Core Java 11
+- Maven for build management
+- Standard Java libraries only (no external dependencies)
+
+## Development Stage
+
+Current stage: Project Foundation
+This is the initial setup phase with basic project structure and minimal application startup code.
+
+## Planned High-Level Components
+
+The future project will separate components approximately as follows:
+
+```
+com.techoptima
+â”œâ”€â”€ model
+â”œâ”€â”€ repository
+â”œâ”€â”€ service
+â”œâ”€â”€ algorithm
+â”‚   â”œâ”€â”€ knapsack
+â”‚   â”œâ”€â”€ graph
+â”‚   â”œâ”€â”€ priority
+â”‚   â””â”€â”€ sorting
+â”œâ”€â”€ database
+â”œâ”€â”€ validation
+â””â”€â”€ util
+```
+
+This foundation will support the development of advanced optimization algorithms for technology portfolio management.
+
+============================================================
+FILE: src\main\java\com\techoptima\TechOptimaApplication.java
+============================================================
+package com.techoptima;
+
+public class TechOptimaApplication {
+    public static void main(String[] args) {
+        System.out.println("TechOptima");
+        System.out.println("Enterprise Technology Transformation & Portfolio Optimization System");
+        System.out.println("Application started successfully.");
+    }
+}
+
+============================================================
+FILE: src\main\java\com\techoptima\database\DatabaseConnection.java
+============================================================
+package com.techoptima.database;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+
+public final class DatabaseConnection {
+
+    private static final String URL =
+            System.getenv().getOrDefault(
+                    "TECHOPTIMA_DB_URL",
+                    "jdbc:mysql://localhost:3306/techoptima?useSSL=false&serverTimezone=UTC"
+            );
+
+    private static final String USER =
+            System.getenv().getOrDefault(
+                    "TECHOPTIMA_DB_USER",
+                    "root"
+            );
+
+    private static final String PASSWORD =
+            System.getenv().getOrDefault(
+                    "TECHOPTIMA_DB_PASSWORD",
+                    ""
+            );
+
+    private DatabaseConnection() {
+    }
+
+    public static Connection getConnection() throws SQLException {
+        return DriverManager.getConnection(URL, USER, PASSWORD);
+    }
+
+    public static boolean testConnection() {
+        try (Connection connection = getConnection()) {
+            return connection != null && !connection.isClosed();
+        } catch (SQLException e) {
+            System.err.println("Database connection failed: " + e.getMessage());
+            return false;
+        }
+    }
+}
+
+============================================================
+FILE: src\main\java\com\techoptima\database\DatabaseConnectionTest.java
+============================================================
+package com.techoptima.database;
+
+import java.sql.Connection;
+
+public class DatabaseConnectionTest {
+
+    public static void main(String[] args) {
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            System.out.println("JDBC CONNECTION SUCCESSFUL");
+            System.out.println("Database: " + connection.getCatalog());
+        } catch (Exception e) {
+            System.err.println("JDBC CONNECTION FAILED");
+            e.printStackTrace();
+        }
+    }
+}
+
+============================================================
+FILE: src\main\java\com\techoptima\model\Application.java
+============================================================
+package com.techoptima.model;
+
+import java.math.BigDecimal;
+import java.util.List;
+import java.util.Objects;
+
+public class Application {
+
+    private final long applicationId;
+    private final String applicationName;
+    private final BigDecimal modernizationCost;
+    private final int businessBenefit;
+    private final Criticality criticality;
+    private final Department department;
+    private final List<Long> dependencyApplicationIds;
+
+    public Application(
+            long applicationId,
+            String applicationName,
+            BigDecimal modernizationCost,
+            int businessBenefit,
+            Criticality criticality,
+            Department department,
+            List<Long> dependencyApplicationIds) {
+
+        if (applicationId <= 0) {
+            throw new IllegalArgumentException("applicationId must be greater than 0");
+        }
+
+        if (applicationName == null || applicationName.isBlank()) {
+            throw new IllegalArgumentException("applicationName cannot be null or blank");
+        }
+
+        if (modernizationCost == null) {
+            throw new IllegalArgumentException("modernizationCost cannot be null");
+        }
+
+        if (modernizationCost.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException(
+                    "modernizationCost must be greater than or equal to 0");
+        }
+
+        if (businessBenefit < 0 || businessBenefit > 100) {
+            throw new IllegalArgumentException(
+                    "businessBenefit must be between 0 and 100");
+        }
+
+        if (criticality == null) {
+            throw new IllegalArgumentException("criticality cannot be null");
+        }
+
+        if (department == null) {
+            throw new IllegalArgumentException("department cannot be null");
+        }
+
+        if (dependencyApplicationIds == null) {
+            throw new IllegalArgumentException(
+                    "dependencyApplicationIds cannot be null");
+        }
+
+        this.applicationId = applicationId;
+        this.applicationName = applicationName;
+        this.modernizationCost = modernizationCost;
+        this.businessBenefit = businessBenefit;
+        this.criticality = criticality;
+        this.department = department;
+        this.dependencyApplicationIds = List.copyOf(dependencyApplicationIds);
+    }
+
+    public long getApplicationId() {
+        return applicationId;
+    }
+
+    public String getApplicationName() {
+        return applicationName;
+    }
+
+    public BigDecimal getModernizationCost() {
+        return modernizationCost;
+    }
+
+    public int getBusinessBenefit() {
+        return businessBenefit;
+    }
+
+    public Criticality getCriticality() {
+        return criticality;
+    }
+
+    public Department getDepartment() {
+        return department;
+    }
+
+    public List<Long> getDependencyApplicationIds() {
+        return dependencyApplicationIds;
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (this == object) {
+            return true;
+        }
+
+        if (!(object instanceof Application)) {
+            return false;
+        }
+
+        Application other = (Application) object;
+        return applicationId == other.applicationId;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(applicationId);
+    }
+
+    @Override
+    public String toString() {
+        return "Application{" +
+                "applicationId=" + applicationId +
+                ", applicationName='" + applicationName + '\'' +
+                ", modernizationCost=" + modernizationCost +
+                ", businessBenefit=" + businessBenefit +
+                ", criticality=" + criticality +
+                ", department=" + department +
+                ", dependencyApplicationIds=" + dependencyApplicationIds +
+                '}';
+    }
+}
+
+============================================================
+FILE: src\main\java\com\techoptima\model\Criticality.java
+============================================================
+package com.techoptima.model;
+
+public enum Criticality {
+    LOW,
+    MEDIUM,
+    HIGH,
+    CRITICAL
+}
+
+============================================================
+FILE: src\main\java\com\techoptima\model\Department.java
+============================================================
+package com.techoptima.model;
+
+public enum Department {
+    FINANCE,
+    HUMAN_RESOURCES,
+    SALES,
+    MARKETING,
+    OPERATIONS,
+    INFORMATION_TECHNOLOGY,
+    CUSTOMER_SERVICE
+}
+
+============================================================
+FILE: src\main\java\com\techoptima\model\TransformationBudget.java
+============================================================
+package com.techoptima.model;
+
+import java.math.BigDecimal;
+
+public class TransformationBudget {
+    private final BigDecimal budgetAmount;
+
+    public TransformationBudget(BigDecimal budgetAmount) {
+        if (budgetAmount == null) {
+            throw new IllegalArgumentException("budgetAmount cannot be null");
+        }
+        if (budgetAmount.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("budgetAmount must be greater than or equal to 0");
+        }
+        this.budgetAmount = budgetAmount;
+    }
+
+    public BigDecimal getBudgetAmount() {
+        return budgetAmount;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        TransformationBudget that = (TransformationBudget) o;
+        return budgetAmount.equals(that.budgetAmount);
+    }
+
+    @Override
+    public int hashCode() {
+        return budgetAmount.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return "TransformationBudget{" +
+                "budgetAmount=" + budgetAmount +
+                '}';
+    }
+}
+
+============================================================
+FILE: src\test\java\com\techoptima\model\ApplicationTest.java
+============================================================
+package com.techoptima.model;
+
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class ApplicationTest {
+
+    private Application createValidApplication() {
+        return new Application(
+                1L,
+                "CRM",
+                BigDecimal.valueOf(20),
+                80,
+                Criticality.HIGH,
+                Department.SALES,
+                List.of()
+        );
+    }
+
+    @Test
+    void shouldCreateValidApplication() {
+        Application application = createValidApplication();
+
+        assertEquals(1L, application.getApplicationId());
+        assertEquals("CRM", application.getApplicationName());
+        assertEquals(BigDecimal.valueOf(20), application.getModernizationCost());
+        assertEquals(80, application.getBusinessBenefit());
+        assertEquals(Criticality.HIGH, application.getCriticality());
+        assertEquals(Department.SALES, application.getDepartment());
+        assertTrue(application.getDependencyApplicationIds().isEmpty());
+    }
+
+    @Test
+    void shouldRejectZeroApplicationId() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Application(
+                        0L, "CRM", BigDecimal.valueOf(20), 80,
+                        Criticality.HIGH, Department.SALES, List.of()
+                )
+        );
+    }
+
+    @Test
+    void shouldRejectNegativeApplicationId() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Application(
+                        -1L, "CRM", BigDecimal.valueOf(20), 80,
+                        Criticality.HIGH, Department.SALES, List.of()
+                )
+        );
+    }
+
+    @Test
+    void shouldRejectNullApplicationName() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Application(
+                        1L, null, BigDecimal.valueOf(20), 80,
+                        Criticality.HIGH, Department.SALES, List.of()
+                )
+        );
+    }
+
+    @Test
+    void shouldRejectBlankApplicationName() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Application(
+                        1L, "   ", BigDecimal.valueOf(20), 80,
+                        Criticality.HIGH, Department.SALES, List.of()
+                )
+        );
+    }
+
+    @Test
+    void shouldRejectNullModernizationCost() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Application(
+                        1L, "CRM", null, 80,
+                        Criticality.HIGH, Department.SALES, List.of()
+                )
+        );
+    }
+
+    @Test
+    void shouldRejectNegativeModernizationCost() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Application(
+                        1L, "CRM", BigDecimal.valueOf(-1), 80,
+                        Criticality.HIGH, Department.SALES, List.of()
+                )
+        );
+    }
+
+    @Test
+    void shouldAcceptZeroBusinessBenefit() {
+        Application application = new Application(
+                1L, "CRM", BigDecimal.valueOf(20), 0,
+                Criticality.HIGH, Department.SALES, List.of()
+        );
+
+        assertEquals(0, application.getBusinessBenefit());
+    }
+
+    @Test
+    void shouldAcceptMaximumBusinessBenefit() {
+        Application application = new Application(
+                1L, "CRM", BigDecimal.valueOf(20), 100,
+                Criticality.HIGH, Department.SALES, List.of()
+        );
+
+        assertEquals(100, application.getBusinessBenefit());
+    }
+
+    @Test
+    void shouldRejectNegativeBusinessBenefit() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Application(
+                        1L, "CRM", BigDecimal.valueOf(20), -1,
+                        Criticality.HIGH, Department.SALES, List.of()
+                )
+        );
+    }
+
+    @Test
+    void shouldRejectBusinessBenefitAbove100() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Application(
+                        1L, "CRM", BigDecimal.valueOf(20), 101,
+                        Criticality.HIGH, Department.SALES, List.of()
+                )
+        );
+    }
+
+    @Test
+    void shouldRejectNullCriticality() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Application(
+                        1L, "CRM", BigDecimal.valueOf(20), 80,
+                        null, Department.SALES, List.of()
+                )
+        );
+    }
+
+    @Test
+    void shouldRejectNullDepartment() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Application(
+                        1L, "CRM", BigDecimal.valueOf(20), 80,
+                        Criticality.HIGH, null, List.of()
+                )
+        );
+    }
+
+    @Test
+    void shouldRejectNullDependencyList() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new Application(
+                        1L, "CRM", BigDecimal.valueOf(20), 80,
+                        Criticality.HIGH, Department.SALES, null
+                )
+        );
+    }
+
+    @Test
+    void shouldDefensivelyCopyDependencyList() {
+        List<Long> dependencies = new ArrayList<>();
+        dependencies.add(2L);
+
+        Application application = new Application(
+                1L, "Analytics", BigDecimal.valueOf(25), 90,
+                Criticality.HIGH, Department.OPERATIONS, dependencies
+        );
+
+        dependencies.add(3L);
+
+        assertEquals(List.of(2L), application.getDependencyApplicationIds());
+    }
+
+    @Test
+    void shouldUseApplicationIdForEquality() {
+        Application first = new Application(
+                1L, "CRM", BigDecimal.valueOf(20), 80,
+                Criticality.HIGH, Department.SALES, List.of()
+        );
+
+        Application second = new Application(
+                1L, "Different Name", BigDecimal.valueOf(50), 40,
+                Criticality.LOW, Department.FINANCE, List.of(5L)
+        );
+
+        assertEquals(first, second);
+        assertEquals(first.hashCode(), second.hashCode());
+    }
+
+    @Test
+    void shouldNotConsiderDifferentApplicationIdsEqual() {
+        Application first = createValidApplication();
+
+        Application second = new Application(
+                2L, "CRM", BigDecimal.valueOf(20), 80,
+                Criticality.HIGH, Department.SALES, List.of()
+        );
+
+        assertNotEquals(first, second);
+    }
+
+    @Test
+    void shouldReturnReadableToString() {
+        Application application = createValidApplication();
+
+        String result = application.toString();
+
+        assertTrue(result.contains("CRM"));
+        assertTrue(result.contains("80"));
+        assertTrue(result.contains("HIGH"));
+        assertTrue(result.contains("SALES"));
+    }
+}
+
+
+============================================================
+FILE: src\test\java\com\techoptima\model\TransformationBudgetTest.java
+============================================================
+package com.techoptima.model;
+
+import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class TransformationBudgetTest {
+
+    @Test
+    void shouldCreateValidBudget() {
+        TransformationBudget budget =
+                new TransformationBudget(BigDecimal.valueOf(100));
+
+        assertEquals(BigDecimal.valueOf(100), budget.getBudgetAmount());
+    }
+
+    @Test
+    void shouldAcceptZeroBudget() {
+        TransformationBudget budget =
+                new TransformationBudget(BigDecimal.ZERO);
+
+        assertEquals(BigDecimal.ZERO, budget.getBudgetAmount());
+    }
+
+    @Test
+    void shouldRejectNegativeBudget() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new TransformationBudget(BigDecimal.valueOf(-1))
+        );
+    }
+
+    @Test
+    void shouldRejectNullBudget() {
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> new TransformationBudget(null)
+        );
+    }
+
+    @Test
+    void shouldSupportEqualityForSameBudgetAmount() {
+        TransformationBudget first =
+                new TransformationBudget(BigDecimal.valueOf(100));
+
+        TransformationBudget second =
+                new TransformationBudget(BigDecimal.valueOf(100));
+
+        assertEquals(first, second);
+        assertEquals(first.hashCode(), second.hashCode());
+    }
+
+    @Test
+    void shouldNotConsiderDifferentBudgetAmountsEqual() {
+        TransformationBudget first =
+                new TransformationBudget(BigDecimal.valueOf(100));
+
+        TransformationBudget second =
+                new TransformationBudget(BigDecimal.valueOf(200));
+
+        assertNotEquals(first, second);
+    }
+
+    @Test
+    void shouldReturnReadableToString() {
+        TransformationBudget budget =
+                new TransformationBudget(BigDecimal.valueOf(100));
+
+        String result = budget.toString();
+
+        assertTrue(result.contains("100"));
+    }
+}
+
+

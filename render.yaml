@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: techoptima-app
+    env: docker
+    plan: free
+    dockerfilePath: Dockerfile
+    envVars:
+      - key: TECHOPTIMA_PORT
+        value: 8080
+      - key: TECHOPTIMA_DB_URL
+        sync: false
+      - key: TECHOPTIMA_DB_USER
+        sync: false
+      - key: TECHOPTIMA_DB_PASSWORD
+        sync: false
