@@ -1,14 +1,18 @@
 {
   "version": 2,
-  "outputDirectory": "frontend",
-  "routes": [
+  "cleanUrls": true,
+  "rewrites": [
     {
-      "src": "/(.*\\.(css|js|png|jpg|svg|ico))",
-      "dest": "/frontend/$1"
+      "source": "/",
+      "destination": "/frontend/index.html"
     },
     {
-      "src": "/((?!.*\\.(css|js|png|jpg|svg|ico)$).*)",
-      "dest": "https://${TECHOPTIMA_BACKEND_URL}/$1"
+      "source": "/css/(.*)",
+      "destination": "/frontend/css/$1"
+    },
+    {
+      "source": "/js/(.*)",
+      "destination": "/frontend/js/$1"
     }
   ]
 }
