@@ -14,6 +14,8 @@ public class TechOptimaApplication {
         System.out.println("==============================================");
 
         try {
+            com.techoptima.database.DatabaseInitializer.initializeDatabase();
+
             PortfolioOptimizationService service =
                     new PortfolioOptimizationService();
 

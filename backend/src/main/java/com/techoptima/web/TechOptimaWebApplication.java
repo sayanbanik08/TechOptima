@@ -54,6 +54,8 @@ public final class TechOptimaWebApplication {
 
     public static void main(String[] args) throws Exception {
 
+        com.techoptima.database.DatabaseInitializer.initializeDatabase();
+
         TechOptimaWebApplication application =
                 new TechOptimaWebApplication();
 
