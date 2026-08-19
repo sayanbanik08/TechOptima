@@ -1,4 +1,4 @@
-{
+﻿{
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
@@ -7,12 +7,16 @@
       "destination": "/frontend/index.html"
     },
     {
-      "source": "/css/(.*)",
-      "destination": "/frontend/css/$1"
+      "source": "/css/:path*",
+      "destination": "/frontend/css/:path*"
     },
     {
-      "source": "/js/(.*)",
-      "destination": "/frontend/js/$1"
+      "source": "/js/:path*",
+      "destination": "/frontend/js/:path*"
+    },
+    {
+      "source": "/:path*",
+      "destination": "https://techoptima-3.onrender.com/:path*"
     }
   ]
 }
