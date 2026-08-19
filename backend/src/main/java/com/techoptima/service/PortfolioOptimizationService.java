@@ -1,5 +1,7 @@
 package com.techoptima.service;
 
+import com.techoptima.algorithm.graph.ApplicationDependencyGraph;
+import com.techoptima.algorithm.graph.DependencyGraphBuilder;
 import com.techoptima.algorithm.knapsack.KnapsackResult;
 import com.techoptima.algorithm.knapsack.ZeroOneKnapsackOptimizer;
 import com.techoptima.algorithm.topology.TopologicalSortResult;
@@ -12,10 +14,7 @@ import com.techoptima.validation.DependencyValidationResult;
 import com.techoptima.validation.DependencyValidator;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 public final class PortfolioOptimizationService {
 
@@ -71,133 +70,47 @@ public final class PortfolioOptimizationService {
         }
 
         /*
-         * Applications that have already been proven to produce an
-         * invalid dependency selection are excluded from subsequent
-         * optimization attempts.
+         * 1. Build the authoritative ApplicationDependencyGraph from domain applications.
          */
-        Set<Long> excludedApplicationIds =
-                new HashSet<>();
+        ApplicationDependencyGraph graph =
+                DependencyGraphBuilder.build(applications);
 
-        while (true) {
-
-            List<Application> candidates =
-                    filterApplications(
-                            applications,
-                            excludedApplicationIds
-                    );
-
-            /*
-             * Nothing remains that can be selected.
-             */
-            if (candidates.isEmpty()) {
-
-                KnapsackResult emptyResult =
-                        new KnapsackResult(
-                                List.of(),
-                                java.math.BigDecimal.ZERO.setScale(2),
-                                0
-                        );
-
-                DependencyValidationResult dependencyResult =
-                        new DependencyValidationResult(
-                                true,
-                                List.of(),
-                                java.util.Map.of()
-                        );
-
-                return new OptimizationResult(
-                        budget,
-                        emptyResult,
-                        dependencyResult,
-                        null
+        /*
+         * 2. Run globally optimal dependency-aware 0/1 Knapsack optimization.
+         * Evaluates dependency closure directly during selection.
+         */
+        KnapsackResult knapsackResult =
+                ZeroOneKnapsackOptimizer.optimize(
+                        applications,
+                        budget
                 );
-            }
 
-            KnapsackResult knapsackResult =
-                    ZeroOneKnapsackOptimizer.optimize(
-                            candidates,
-                            budget
-                    );
+        /*
+         * 3. Validate dependency closure on the selected portfolio.
+         */
+        DependencyValidationResult dependencyResult =
+                DependencyValidator.validate(
+                        graph,
+                        knapsackResult.getSelectedApplications()
+                );
 
-            DependencyValidationResult dependencyResult =
-                    DependencyValidator.validate(
+        /*
+         * 4. Compute dependency-respecting execution sequence using the authoritative graph.
+         */
+        TopologicalSortResult topologyResult = null;
+        if (dependencyResult.isValid()) {
+            topologyResult =
+                    TopologicalSorter.sort(
+                            graph,
                             knapsackResult.getSelectedApplications()
                     );
-
-            /*
-             * Normal case:
-             * the knapsack result already satisfies every dependency.
-             */
-            if (dependencyResult.isValid()) {
-
-                TopologicalSortResult topologyResult =
-                        TopologicalSorter.sort(
-                                knapsackResult.getSelectedApplications()
-                        );
-
-                return new OptimizationResult(
-                        budget,
-                        knapsackResult,
-                        dependencyResult,
-                        topologyResult
-                );
-            }
-
-            /*
-             * Dependency-invalid applications cannot remain in the
-             * candidate pool for the next optimization attempt.
-             *
-             * Example:
-             *
-             * Analytics -> CRM
-             *
-             * If Analytics is selected but CRM is not selected,
-             * Analytics is excluded and the optimizer is executed again.
-             */
-            Set<Long> invalidSelectedIds =
-                    new HashSet<>(
-                            dependencyResult
-                                    .getMissingDependenciesByApplication()
-                                    .keySet()
-                    );
-
-            /*
-             * Safety guard. Every invalid iteration must remove at least
-             * one application. This prevents an accidental infinite loop
-             * if the validation implementation changes in the future.
-             */
-            if (invalidSelectedIds.isEmpty()) {
-
-                return new OptimizationResult(
-                        budget,
-                        knapsackResult,
-                        dependencyResult,
-                        null
-                );
-            }
-
-            excludedApplicationIds.addAll(
-                    invalidSelectedIds
-            );
-        }
-    }
-
-    private static List<Application> filterApplications(
-            List<Application> applications,
-            Set<Long> excludedApplicationIds) {
-
-        List<Application> candidates =
-                new ArrayList<>();
-
-        for (Application application : applications) {
-
-            if (!excludedApplicationIds.contains(
-                    application.getApplicationId())) {
-
-                candidates.add(application);
-            }
         }
 
-        return candidates;
+        return new OptimizationResult(
+                budget,
+                knapsackResult,
+                dependencyResult,
+                topologyResult
+        );
     }
 }

@@ -22,10 +22,12 @@ import java.util.Set;
 public final class ApplicationDependencyGraph {
 
     private final Map<Long, Set<Long>> adjacencyList;
+    private final Map<Long, Set<Long>> directDependencies;
     private final Set<Long> knownApplicationIds;
 
     public ApplicationDependencyGraph() {
         this.adjacencyList = new LinkedHashMap<>();
+        this.directDependencies = new LinkedHashMap<>();
         this.knownApplicationIds = new LinkedHashSet<>();
     }
 
@@ -37,6 +39,7 @@ public final class ApplicationDependencyGraph {
 
         knownApplicationIds.add(applicationId);
         adjacencyList.computeIfAbsent(applicationId, ignored -> new LinkedHashSet<>());
+        directDependencies.computeIfAbsent(applicationId, ignored -> new LinkedHashSet<>());
     }
 
     /**
@@ -54,9 +57,31 @@ public final class ApplicationDependencyGraph {
         adjacencyList.computeIfAbsent(dependencyApplicationId, ignored -> new LinkedHashSet<>());
         adjacencyList.computeIfAbsent(applicationId, ignored -> new LinkedHashSet<>());
 
+        directDependencies.computeIfAbsent(applicationId, ignored -> new LinkedHashSet<>());
+        directDependencies.computeIfAbsent(dependencyApplicationId, ignored -> new LinkedHashSet<>());
+
         adjacencyList
                 .get(dependencyApplicationId)
                 .add(applicationId);
+
+        directDependencies
+                .get(applicationId)
+                .add(dependencyApplicationId);
+    }
+
+    /**
+     * Returns the direct dependencies required by the given application.
+     */
+    public List<Long> getDependencies(long applicationId) {
+        validateApplicationId(applicationId);
+
+        Set<Long> dependencies = directDependencies.get(applicationId);
+
+        if (dependencies == null) {
+            return List.of();
+        }
+
+        return Collections.unmodifiableList(new ArrayList<>(dependencies));
     }
 
     /**

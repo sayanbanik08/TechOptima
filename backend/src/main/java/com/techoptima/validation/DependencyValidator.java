@@ -1,5 +1,6 @@
 package com.techoptima.validation;
 
+import com.techoptima.algorithm.graph.ApplicationDependencyGraph;
 import com.techoptima.model.Application;
 
 import java.util.ArrayList;
@@ -14,6 +15,19 @@ import java.util.Set;
 public final class DependencyValidator {
 
     private DependencyValidator() {
+    }
+
+    public static DependencyValidationResult validate(
+            ApplicationDependencyGraph graph,
+            Collection<Application> selectedApplications) {
+
+        if (graph == null) {
+            throw new IllegalArgumentException(
+                    "graph cannot be null"
+            );
+        }
+
+        return validate(selectedApplications);
     }
 
     /**

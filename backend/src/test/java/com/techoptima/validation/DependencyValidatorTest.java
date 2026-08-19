@@ -250,4 +250,26 @@ class DependencyValidatorTest {
                         .get(3L)
         );
     }
+
+    @Test
+    void shouldValidateWithAuthoritativeGraph() {
+        Application crm = application(1L, "CRM", List.of());
+        Application analytics = application(2L, "Analytics", List.of(1L));
+
+        com.techoptima.algorithm.graph.ApplicationDependencyGraph graph =
+                com.techoptima.algorithm.graph.DependencyGraphBuilder.build(List.of(crm, analytics));
+
+        DependencyValidationResult result = DependencyValidator.validate(graph, List.of(crm, analytics));
+        assertTrue(result.isValid());
+    }
+
+    @Test
+    void shouldRejectNullGraph() {
+        Application crm = application(1L, "CRM", List.of());
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> DependencyValidator.validate(null, List.of(crm))
+        );
+    }
 }

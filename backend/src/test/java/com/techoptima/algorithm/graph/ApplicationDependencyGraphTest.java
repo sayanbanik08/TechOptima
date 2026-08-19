@@ -206,4 +206,16 @@ class ApplicationDependencyGraphTest {
                 () -> adjacency.put(99L, List.of())
         );
     }
+
+    @Test
+    void shouldTrackDirectDependencies() {
+        Application crm = createApplication(1L, "CRM", List.of());
+        Application analytics = createApplication(2L, "Analytics", List.of(1L));
+
+        ApplicationDependencyGraph graph =
+                DependencyGraphBuilder.build(List.of(crm, analytics));
+
+        assertEquals(List.of(1L), graph.getDependencies(2L));
+        assertTrue(graph.getDependencies(1L).isEmpty());
+    }
 }

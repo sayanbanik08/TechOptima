@@ -184,4 +184,43 @@ class PerformanceBenchmarkTest {
 
         System.out.println("Exact arithmetic and large budget verified without precision loss or overflow.");
     }
+
+    @Test
+    void benchmarkDependencyKnapsackWithDAG() {
+        System.out.println("\n=== DEPENDENCY-CONSTRAINED KNAPSACK BENCHMARK ===");
+
+        int[] datasetSizes = {10, 25, 50};
+        BigDecimal[] budgets = {
+            new BigDecimal("200.00"),
+            new BigDecimal("500.00"),
+            new BigDecimal("1000.00")
+        };
+
+        for (int k = 0; k < datasetSizes.length; k++) {
+            int n = datasetSizes[k];
+            TransformationBudget budget = new TransformationBudget(budgets[k]);
+            List<Application> apps = generateDataset(n, 2);
+
+            // Warmup
+            ZeroOneKnapsackOptimizer.optimize(apps, budget);
+
+            long start = System.nanoTime();
+            KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(apps, budget);
+            long elapsed = System.nanoTime() - start;
+
+            double ms = elapsed / 1_000_000.0;
+
+            System.out.printf("DAG Dataset N=%-4d | Budget=$%-8s | Selected=%-3d | Benefit=%-4d | Time=%.3f ms%n",
+                    n, budget.getBudgetAmount(), result.getSelectedApplications().size(),
+                    result.getTotalBusinessBenefit(), ms);
+
+            assertNotNull(result);
+            assertTrue(result.getTotalCost().compareTo(budget.getBudgetAmount()) <= 0);
+
+            // Verify dependency validity on the selected portfolio
+            DependencyValidationResult validation = DependencyValidator.validate(result.getSelectedApplications());
+            assertTrue(validation.isValid(), "Selected portfolio must strictly satisfy all dependency constraints");
+            assertTrue(ms < 1000.0, "Dependency knapsack should execute within 1000ms");
+        }
+    }
 }

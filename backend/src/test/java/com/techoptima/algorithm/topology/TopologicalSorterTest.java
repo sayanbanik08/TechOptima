@@ -483,4 +483,28 @@ class TopologicalSorterTest {
         // Highest criticality root (Payment - CRITICAL) should come before lower criticality root (CRM - HIGH)
         assertTrue(ordered.indexOf(payment) < ordered.indexOf(crm));
     }
+
+    @Test
+    void shouldSortUsingAuthoritativeGraph() {
+        Application crm = application(1L, "CRM", "20.00", 80, Criticality.HIGH, List.of());
+        Application analytics = application(2L, "Analytics", "25.00", 90, Criticality.HIGH, List.of(1L));
+
+        com.techoptima.algorithm.graph.ApplicationDependencyGraph graph =
+                com.techoptima.algorithm.graph.DependencyGraphBuilder.build(List.of(crm, analytics));
+
+        TopologicalSortResult result = TopologicalSorter.sort(graph, List.of(analytics, crm));
+
+        assertTrue(result.isValid());
+        assertEquals(List.of(crm, analytics), result.getOrderedApplications());
+    }
+
+    @Test
+    void shouldRejectNullGraph() {
+        Application crm = application(1L, "CRM", "20.00", 80, Criticality.HIGH, List.of());
+
+        assertThrows(
+                IllegalArgumentException.class,
+                () -> TopologicalSorter.sort(null, List.of(crm))
+        );
+    }
 }

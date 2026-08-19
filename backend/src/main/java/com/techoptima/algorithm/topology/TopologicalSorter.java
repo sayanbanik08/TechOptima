@@ -1,5 +1,7 @@
 package com.techoptima.algorithm.topology;
 
+import com.techoptima.algorithm.graph.ApplicationDependencyGraph;
+import com.techoptima.algorithm.graph.DependencyGraphBuilder;
 import com.techoptima.algorithm.priority.ApplicationPriorityComparator;
 import com.techoptima.model.Application;
 
@@ -19,7 +21,7 @@ public final class TopologicalSorter {
     }
 
     /**
-     * Produces a valid dependency-respecting upgrade order.
+     * Produces a valid dependency-respecting upgrade order using the supplied authoritative graph.
      *
      * Edge direction:
      * dependency -> dependent
@@ -27,12 +29,16 @@ public final class TopologicalSorter {
      * Kahn's algorithm:
      * Time  : O(V + E log V)
      * Space : O(V + E)
-     *
-     * The log V factor comes from using the existing application
-     * priority rule when multiple nodes are ready.
      */
     public static TopologicalSortResult sort(
+            ApplicationDependencyGraph graph,
             Collection<Application> applications) {
+
+        if (graph == null) {
+            throw new IllegalArgumentException(
+                    "graph cannot be null"
+            );
+        }
 
         if (applications == null) {
             throw new IllegalArgumentException(
@@ -95,19 +101,16 @@ public final class TopologicalSorter {
                                     + applicationId
                     );
                 }
+            }
 
-                /*
-                 * Avoid counting duplicate dependency entries
-                 * more than once.
-                 */
-                if (outgoingEdges
-                        .get(dependencyId)
-                        .add(applicationId)) {
-
-                    indegree.put(
-                            applicationId,
-                            indegree.get(applicationId) + 1
-                    );
+            for (Long dependentId : graph.getDependents(applicationId)) {
+                if (applicationsById.containsKey(dependentId)) {
+                    if (outgoingEdges.get(applicationId).add(dependentId)) {
+                        indegree.put(
+                                dependentId,
+                                indegree.get(dependentId) + 1
+                        );
+                    }
                 }
             }
         }
@@ -186,5 +189,23 @@ public final class TopologicalSorter {
                 ordered,
                 cyclicApplicationIds
         );
+    }
+
+    /**
+     * Produces a valid dependency-respecting upgrade order by building the graph from applications.
+     */
+    public static TopologicalSortResult sort(
+            Collection<Application> applications) {
+
+        if (applications == null) {
+            throw new IllegalArgumentException(
+                    "applications cannot be null"
+            );
+        }
+
+        ApplicationDependencyGraph graph =
+                DependencyGraphBuilder.build(applications);
+
+        return sort(graph, applications);
     }
 }
