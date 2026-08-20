@@ -754,6 +754,11 @@ public final class TechOptimaWebApplication {
                     "<h2>Selected Applications</h2>"
             );
 
+            boolean hasSelectedApplications = !result
+                    .getKnapsackResult()
+                    .getSelectedApplications()
+                    .isEmpty();
+
             html.append("<table>");
             html.append(
                     "<tr><th>Application</th>"
@@ -789,6 +794,15 @@ public final class TechOptimaWebApplication {
                 html.append("</tr>");
             }
 
+            if (!hasSelectedApplications) {
+                html.append(
+                        "<tr class='empty-state'><td colspan='4'>"
+                                + "No applications fit the current budget "
+                                + "with all required dependencies."
+                                + "</td></tr>"
+                );
+            }
+
             html.append("</table>");
 
             html.append(
@@ -815,7 +829,15 @@ public final class TechOptimaWebApplication {
                     "<h2>Dependency Validation</h2>"
             );
 
-            if (result
+            if (!hasSelectedApplications) {
+
+                html.append(
+                        "<p class='warning'>"
+                                + "NOT APPLICABLE: no applications were selected."
+                                + "</p>"
+                );
+
+            } else if (result
                     .getDependencyValidationResult()
                     .isValid()) {
 
@@ -840,7 +862,20 @@ public final class TechOptimaWebApplication {
 
             html.append("</div>");
 
-            if (result.isSuccessful()) {
+            if (!hasSelectedApplications) {
+
+                html.append("<div class='result-card'>");
+                html.append("<h2>Final Upgrade Order</h2>");
+                html.append(
+                        "<p class='warning'>"
+                                + "NO FEASIBLE PORTFOLIO: increase the budget "
+                                + "or revise the dependency and cost data."
+                                + "</p>"
+                );
+                html.append("</div>");
+                html.append("</div>");
+
+            } else if (result.isSuccessful()) {
 
                 html.append("<div class='result-card'>");
 
@@ -878,11 +913,46 @@ public final class TechOptimaWebApplication {
 
             } else {
 
+                List<Long> cyclicApplicationIds = result
+                        .getTopologicalSortResult() == null
+                        ? List.of()
+                        : result.getTopologicalSortResult()
+                                .getCyclicApplicationIds();
+
                 html.append(
                         "<p class='error'>"
-                                + "Final recommendation unavailable."
+                                + "FINAL UPGRADE ORDER UNAVAILABLE: "
+                                + "the selected portfolio contains circular dependencies."
                                 + "</p>"
                 );
+
+                if (!cyclicApplicationIds.isEmpty()) {
+                    html.append(
+                            "<p>Resolve the circular dependencies involving: "
+                    );
+
+                    List<Application> selectedApplications = result
+                            .getKnapsackResult()
+                            .getSelectedApplications();
+
+                    boolean first = true;
+                    for (Application application : selectedApplications) {
+                        if (cyclicApplicationIds.contains(
+                                application.getApplicationId())) {
+
+                            if (!first) {
+                                html.append(", ");
+                            }
+
+                            html.append(escape(
+                                    application.getApplicationName()
+                            ));
+                            first = false;
+                        }
+                    }
+
+                    html.append(".</p>");
+                }
             }
 
             html.append(

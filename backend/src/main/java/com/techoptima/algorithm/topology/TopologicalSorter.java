@@ -5,8 +5,10 @@ import com.techoptima.algorithm.graph.DependencyGraphBuilder;
 import com.techoptima.algorithm.priority.ApplicationPriorityComparator;
 import com.techoptima.model.Application;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -172,17 +174,10 @@ public final class TopologicalSorter {
         }
 
         List<Long> cyclicApplicationIds =
-                new ArrayList<>();
-
-        for (Map.Entry<Long, Integer> entry :
-                indegree.entrySet()) {
-
-            if (entry.getValue() > 0) {
-                cyclicApplicationIds.add(
-                        entry.getKey()
+                findCyclicApplicationIds(
+                        outgoingEdges,
+                        applicationsById.keySet()
                 );
-            }
-        }
 
         return new TopologicalSortResult(
                 false,
@@ -207,5 +202,117 @@ public final class TopologicalSorter {
                 DependencyGraphBuilder.build(applications);
 
         return sort(graph, applications);
+    }
+
+    /**
+     * Identifies only applications that are part of a cycle. Kahn's remaining
+     * non-zero indegrees also include applications merely blocked by a cycle,
+     * so they cannot be used directly for user-facing cycle reporting.
+     */
+    private static List<Long> findCyclicApplicationIds(
+            Map<Long, Set<Long>> outgoingEdges,
+            Collection<Long> applicationIds) {
+
+        Map<Long, Integer> discoveryIndexes =
+                new HashMap<>();
+        Map<Long, Integer> lowLinks =
+                new HashMap<>();
+        Deque<Long> stack = new ArrayDeque<>();
+        Set<Long> onStack = new LinkedHashSet<>();
+        Set<Long> cyclicIds = new LinkedHashSet<>();
+        int[] nextIndex = {0};
+
+        for (Long applicationId : applicationIds) {
+            if (!discoveryIndexes.containsKey(applicationId)) {
+                findCycleComponents(
+                        applicationId,
+                        outgoingEdges,
+                        discoveryIndexes,
+                        lowLinks,
+                        stack,
+                        onStack,
+                        cyclicIds,
+                        nextIndex
+                );
+            }
+        }
+
+        List<Long> orderedCyclicIds = new ArrayList<>();
+        for (Long applicationId : applicationIds) {
+            if (cyclicIds.contains(applicationId)) {
+                orderedCyclicIds.add(applicationId);
+            }
+        }
+
+        return orderedCyclicIds;
+    }
+
+    /**
+     * Tarjan's strongly connected components algorithm. Its O(V + E) pass is
+     * only required after Kahn's algorithm has already found a cycle.
+     */
+    private static void findCycleComponents(
+            Long applicationId,
+            Map<Long, Set<Long>> outgoingEdges,
+            Map<Long, Integer> discoveryIndexes,
+            Map<Long, Integer> lowLinks,
+            Deque<Long> stack,
+            Set<Long> onStack,
+            Set<Long> cyclicIds,
+            int[] nextIndex) {
+
+        int index = nextIndex[0]++;
+        discoveryIndexes.put(applicationId, index);
+        lowLinks.put(applicationId, index);
+        stack.push(applicationId);
+        onStack.add(applicationId);
+
+        for (Long dependentId : outgoingEdges.get(applicationId)) {
+            if (!discoveryIndexes.containsKey(dependentId)) {
+                findCycleComponents(
+                        dependentId,
+                        outgoingEdges,
+                        discoveryIndexes,
+                        lowLinks,
+                        stack,
+                        onStack,
+                        cyclicIds,
+                        nextIndex
+                );
+                lowLinks.put(
+                        applicationId,
+                        Math.min(
+                                lowLinks.get(applicationId),
+                                lowLinks.get(dependentId)
+                        )
+                );
+            } else if (onStack.contains(dependentId)) {
+                lowLinks.put(
+                        applicationId,
+                        Math.min(
+                                lowLinks.get(applicationId),
+                                discoveryIndexes.get(dependentId)
+                        )
+                );
+            }
+        }
+
+        if (!lowLinks.get(applicationId).equals(
+                discoveryIndexes.get(applicationId))) {
+            return;
+        }
+
+        List<Long> component = new ArrayList<>();
+        Long componentMember;
+        do {
+            componentMember = stack.pop();
+            onStack.remove(componentMember);
+            component.add(componentMember);
+        } while (!componentMember.equals(applicationId));
+
+        if (component.size() > 1
+                || outgoingEdges.get(applicationId).contains(applicationId)) {
+            cyclicIds.addAll(component);
+        }
     }
 }

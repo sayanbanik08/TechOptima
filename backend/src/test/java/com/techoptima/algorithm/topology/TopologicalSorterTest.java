@@ -243,6 +243,70 @@ class TopologicalSorterTest {
     }
 
     @Test
+    void shouldExcludeApplicationsBlockedByACycleFromCycleReport() {
+
+        Application independent =
+                application(
+                        1L,
+                        "Independent",
+                        "20.00",
+                        80,
+                        Criticality.HIGH,
+                        List.of()
+                );
+
+        Application analytics =
+                application(
+                        2L,
+                        "Analytics",
+                        "25.00",
+                        90,
+                        Criticality.HIGH,
+                        List.of(3L)
+                );
+
+        Application reporting =
+                application(
+                        3L,
+                        "Reporting",
+                        "15.00",
+                        70,
+                        Criticality.MEDIUM,
+                        List.of(2L)
+                );
+
+        Application dashboard =
+                application(
+                        4L,
+                        "Dashboard",
+                        "10.00",
+                        60,
+                        Criticality.LOW,
+                        List.of(2L)
+                );
+
+        TopologicalSortResult result =
+                TopologicalSorter.sort(
+                        List.of(
+                                independent,
+                                analytics,
+                                reporting,
+                                dashboard
+                        )
+                );
+
+        assertFalse(result.isValid());
+        assertEquals(
+                List.of(independent),
+                result.getOrderedApplications()
+        );
+        assertEquals(
+                List.of(2L, 3L),
+                result.getCyclicApplicationIds()
+        );
+    }
+
+    @Test
     void shouldUsePriorityWhenMultipleApplicationsAreReady() {
 
         Application low =

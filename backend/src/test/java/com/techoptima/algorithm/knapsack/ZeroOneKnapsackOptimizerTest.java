@@ -9,6 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -492,5 +493,365 @@ class ZeroOneKnapsackOptimizerTest {
         assertEquals(2, result.getSelectedApplications().size());
         assertTrue(result.getSelectedApplications().contains(a));
         assertTrue(result.getSelectedApplications().contains(b));
+    }
+
+    @Test
+    void shouldOptimizeWithOneCroreBudget() {
+        Application a = application(1L, "App A", "3000000.00", 80);
+        Application b = application(2L, "App B", "5000000.00", 90);
+        Application c = application(3L, "App C", "4000000.00", 70);
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b, c),
+                new TransformationBudget(new BigDecimal("10000000.00"))
+        );
+
+        assertEquals(170, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("8000000.00"), result.getTotalCost());
+        assertEquals(2, result.getSelectedApplications().size());
+    }
+
+    @Test
+    void shouldOptimizeWithHundredCroreBudget() {
+        Application a = application(1L, "App A", "250000000.00", 85);
+        Application b = application(2L, "App B", "350000000.00", 90);
+        Application c = application(3L, "App C", "500000000.00", 95);
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b, c),
+                new TransformationBudget(new BigDecimal("1000000000.00"))
+        );
+
+        assertEquals(185, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("850000000.00"), result.getTotalCost());
+        assertEquals(2, result.getSelectedApplications().size());
+    }
+
+    @Test
+    void shouldOptimizeWithTenThousandCroreBudget() {
+        Application a = application(1L, "App A", "40000000000.00", 80);
+        Application b = application(2L, "App B", "70000000000.00", 95);
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b),
+                new TransformationBudget(new BigDecimal("100000000000.00"))
+        );
+
+        assertEquals(95, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("70000000000.00"), result.getTotalCost());
+        assertEquals(List.of(b), result.getSelectedApplications());
+    }
+
+    @Test
+    void shouldSelectApplicationWhenCostExactlyEqualsBudgetLargeScale() {
+        Application a = application(1L, "App A", "500000000.00", 75);
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a),
+                new TransformationBudget(new BigDecimal("500000000.00"))
+        );
+
+        assertEquals(75, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("500000000.00"), result.getTotalCost());
+        assertEquals(List.of(a), result.getSelectedApplications());
+    }
+
+    @Test
+    void shouldNotSelectApplicationJustOverBudgetLargeScale() {
+        Application a = application(1L, "App A", "500000000.01", 75);
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a),
+                new TransformationBudget(new BigDecimal("500000000.00"))
+        );
+
+        assertEquals(0, result.getTotalBusinessBenefit());
+        assertEquals(BigDecimal.ZERO, result.getTotalCost());
+        assertTrue(result.getSelectedApplications().isEmpty());
+    }
+
+    @Test
+    void shouldHandleScalingRoundingBoundary() {
+        Application a = application(1L, "App A", "199.00", 10);
+        Application b = application(2L, "App B", "200.00", 10);
+        Application c = application(3L, "App C", "201.00", 10);
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b, c),
+                new TransformationBudget(new BigDecimal("1000000000.00"))
+        );
+
+        assertEquals(30, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("600.00"), result.getTotalCost());
+        assertEquals(3, result.getSelectedApplications().size());
+    }
+
+    @Test
+    void shouldPreservePrecisionAtSmallScale() {
+        Application a = application(1L, "App A", "10.01", 30);
+        Application b = application(2L, "App B", "10.02", 40);
+        Application c = application(3L, "App C", "10.99", 50);
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b, c),
+                new TransformationBudget(new BigDecimal("100.00"))
+        );
+
+        assertEquals(120, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("31.02"), result.getTotalCost());
+        assertEquals(3, result.getSelectedApplications().size());
+    }
+
+    @Test
+    void shouldHandleZeroCostWithLargeBudget() {
+        Application a = application(1L, "App A", "0.00", 50);
+        Application b = application(2L, "App B", "1000000000.00", 80);
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b),
+                new TransformationBudget(new BigDecimal("1000000000.00"))
+        );
+
+        assertEquals(130, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("1000000000.00"), result.getTotalCost());
+        assertEquals(2, result.getSelectedApplications().size());
+    }
+
+    @Test
+    void shouldHandleSingleCostExceedingBudgetLargeScale() {
+        Application a = application(1L, "App A", "1000000001.00", 95);
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a),
+                new TransformationBudget(new BigDecimal("1000000000.00"))
+        );
+
+        assertEquals(0, result.getTotalBusinessBenefit());
+        assertEquals(BigDecimal.ZERO, result.getTotalCost());
+        assertTrue(result.getSelectedApplications().isEmpty());
+    }
+
+    @Test
+    void shouldReturnEmptyWhenAllAppsExceedLargeBudget() {
+        Application a = application(1L, "App A", "10000000.01", 80);
+        Application b = application(2L, "App B", "20000000.00", 90);
+        Application c = application(3L, "App C", "15000000.00", 70);
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b, c),
+                new TransformationBudget(new BigDecimal("10000000.00"))
+        );
+
+        assertEquals(0, result.getTotalBusinessBenefit());
+        assertEquals(BigDecimal.ZERO, result.getTotalCost());
+        assertTrue(result.getSelectedApplications().isEmpty());
+    }
+
+    @Test
+    void shouldSolveDependencyWithLargeScale() {
+        Application a = applicationWithDeps(1L, "App A", "300000000.00", 95, List.of(2L));
+        Application b = application(2L, "App B", "200000000.00", 40);
+        Application c = application(3L, "App C", "600000000.00", 70);
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b, c),
+                new TransformationBudget(new BigDecimal("1000000000.00"))
+        );
+
+        assertEquals(135, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("500000000.00"), result.getTotalCost());
+        assertEquals(2, result.getSelectedApplications().size());
+        assertTrue(result.getSelectedApplications().contains(a));
+        assertTrue(result.getSelectedApplications().contains(b));
+    }
+
+    @Test
+    void shouldRejectDependencyExceedingBudgetLargeScale() {
+        Application a = applicationWithDeps(1L, "App A", "300000000.00", 95, List.of(2L));
+        Application b = application(2L, "App B", "200000000.00", 40);
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b),
+                new TransformationBudget(new BigDecimal("400000000.00"))
+        );
+
+        assertEquals(40, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("200000000.00"), result.getTotalCost());
+        assertEquals(1, result.getSelectedApplications().size());
+        assertTrue(result.getSelectedApplications().contains(b));
+    }
+
+    @Test
+    void shouldHandleZeroBudgetAndAllZeroCostApplications() {
+        Application a = application(1L, "App A", "0.00", 50);
+        Application b = application(2L, "App B", "0.00", 60);
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b),
+                new TransformationBudget(BigDecimal.ZERO)
+        );
+
+        assertEquals(110, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("0.00"), result.getTotalCost());
+        assertEquals(2, result.getSelectedApplications().size());
+    }
+
+    @Test
+    void shouldSelectWithinTightScaledBoundary() {
+        // Budget ₹100 Crore = 1,000,000,000.00
+        Application a = application(1L, "App A", "400000000.00", 80);
+        Application b = application(2L, "App B", "600000000.00", 90);
+        Application c = application(3L, "App C", "100.00", 5);
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b, c),
+                new TransformationBudget(new BigDecimal("1000000000.00"))
+        );
+
+        // a + b = 1,000,000,000.00 (exact budget, benefit 170)
+        // a + b + c = 1,000,000,100.00 > budget
+        assertEquals(170, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("1000000000.00"), result.getTotalCost());
+        assertEquals(2, result.getSelectedApplications().size());
+        assertTrue(result.getSelectedApplications().contains(a));
+        assertTrue(result.getSelectedApplications().contains(b));
+    }
+
+    @Test
+    void shouldOptimizeEnterpriseScaleWithManyApplicationsAndDependencies() {
+        // ₹100 Crore budget with 20 enterprise applications and dependency relationships
+        List<Application> apps = new java.util.ArrayList<>();
+        BigDecimal totalAvailableBudget = new BigDecimal("1000000000.00");
+
+        for (int i = 1; i <= 20; i++) {
+            List<Long> deps = (i % 3 == 0 && i > 3) ? List.of((long) (i - 1)) : List.of();
+            BigDecimal cost = new BigDecimal((50000000 + (i * 5000000)) + ".00");
+            int benefit = 50 + (i * 2);
+            apps.add(new Application((long) i, "Enterprise-App-" + i, cost, benefit,
+                    Criticality.HIGH, Department.OPERATIONS, deps));
+        }
+
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                apps,
+                new TransformationBudget(totalAvailableBudget)
+        );
+
+        assertNotNull(result);
+        assertTrue(result.getTotalCost().compareTo(totalAvailableBudget) <= 0,
+                "Total cost must not exceed ₹100 Crore");
+        assertTrue(result.getTotalBusinessBenefit() > 0);
+        assertTrue(result.getSelectedApplications().size() > 5);
+
+        // Verify that every selected application with a dependency has its dependency in the selection
+        Set<Long> selectedIds = result.getSelectedApplications().stream()
+                .map(Application::getApplicationId)
+                .collect(java.util.stream.Collectors.toSet());
+
+        for (Application app : result.getSelectedApplications()) {
+            for (Long depId : app.getDependencyApplicationIds()) {
+                assertTrue(selectedIds.contains(depId),
+                        "Dependency " + depId + " for app " + app.getApplicationId() + " must be selected");
+            }
+        }
+    }
+
+    @Test
+    void shouldPruneChainedMissingDependency() {
+        // A -> B -> C and B -> 999 (missing)
+        Application a = applicationWithDeps(1L, "App A", "10.00", 90, List.of(2L));
+        Application b = applicationWithDeps(2L, "App B", "10.00", 80, List.of(3L, 999L));
+        Application c = application(3L, "App C", "10.00", 70);
+        Application d = application(4L, "App D", "10.00", 50);
+
+        // Budget 20.00: A and B are pruned due to missing 999L. C and D fit within budget.
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b, c, d),
+                new TransformationBudget(new BigDecimal("20.00"))
+        );
+
+        assertEquals(120, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("20.00"), result.getTotalCost());
+        assertEquals(2, result.getSelectedApplications().size());
+        assertTrue(result.getSelectedApplications().contains(c));
+        assertTrue(result.getSelectedApplications().contains(d));
+    }
+
+    @Test
+    void shouldHandleCycleWithDependent() {
+        // Cycle: A <-> B (A requires B, B requires A), and C requires A
+        Application a = applicationWithDeps(1L, "App A", "20.00", 40, List.of(2L));
+        Application b = applicationWithDeps(2L, "App B", "20.00", 40, List.of(1L));
+        Application c = applicationWithDeps(3L, "App C", "20.00", 90, List.of(1L));
+        Application d = application(4L, "App D", "35.00", 85);
+
+        // If Budget is 40.00:
+        // {A, B} costs 40.00, benefit 80
+        // {C} is impossible because it requires {A, B} = 60.00 > 40.00
+        // {D} costs 35.00, benefit 85
+        // Optimal is {D} with benefit 85
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b, c, d),
+                new TransformationBudget(new BigDecimal("40.00"))
+        );
+
+        assertEquals(85, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("35.00"), result.getTotalCost());
+        assertEquals(List.of(d), result.getSelectedApplications());
+
+        // If Budget is 60.00:
+        // {A, B, C} costs 60.00, benefit 40+40+90 = 170 > {D} (85)
+        KnapsackResult result60 = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b, c, d),
+                new TransformationBudget(new BigDecimal("60.00"))
+        );
+        assertEquals(170, result60.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("60.00"), result60.getTotalCost());
+        assertEquals(3, result60.getSelectedApplications().size());
+        assertTrue(result60.getSelectedApplications().contains(a));
+        assertTrue(result60.getSelectedApplications().contains(b));
+        assertTrue(result60.getSelectedApplications().contains(c));
+    }
+
+    @Test
+    void shouldHandleSharedDependencyBranchChoice() {
+        // A -> B, and C -> B
+        Application a = applicationWithDeps(1L, "App A", "20.00", 80, List.of(2L));
+        Application b = application(2L, "App B", "20.00", 30);
+        Application c = applicationWithDeps(3L, "App C", "20.00", 90, List.of(2L));
+
+        // Budget 40.00:
+        // {A, B} = cost 40.00, benefit 110
+        // {C, B} = cost 40.00, benefit 120
+        // {A, C} = infeasible without B
+        // {A, B, C} = cost 60.00 > 40.00
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b, c),
+                new TransformationBudget(new BigDecimal("40.00"))
+        );
+
+        assertEquals(120, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("40.00"), result.getTotalCost());
+        assertEquals(2, result.getSelectedApplications().size());
+        assertTrue(result.getSelectedApplications().contains(b));
+        assertTrue(result.getSelectedApplications().contains(c));
+    }
+
+    @Test
+    void shouldPruneCycleWithMissingDependency() {
+        // Cycle: A <-> B (A requires B, B requires A), but B also requires non-existent 999L
+        Application a = applicationWithDeps(1L, "App A", "20.00", 90, List.of(2L));
+        Application b = applicationWithDeps(2L, "App B", "20.00", 90, List.of(1L, 999L));
+        Application c = application(3L, "App C", "20.00", 50);
+
+        // Budget 50.00: A and B form a cycle with a missing dep (999L), so both must be pruned.
+        // Only independent App C should be selected.
+        KnapsackResult result = ZeroOneKnapsackOptimizer.optimize(
+                List.of(a, b, c),
+                new TransformationBudget(new BigDecimal("50.00"))
+        );
+
+        assertEquals(50, result.getTotalBusinessBenefit());
+        assertEquals(new BigDecimal("20.00"), result.getTotalCost());
+        assertEquals(List.of(c), result.getSelectedApplications());
     }
 }
